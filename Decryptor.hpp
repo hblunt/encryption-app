@@ -6,9 +6,9 @@
 class Decryptor {
 public:
     std::string decrypt(const std::string& encryptedMessage, int rounds);
-
-private:
     std::string processDecryption(const std::string& encryptedMessage);
+private:
+    
 };
 
 #endif

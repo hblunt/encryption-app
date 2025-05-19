@@ -3,6 +3,7 @@
 #include "Decryptor.hpp"
 #include <iostream>
 #include <string>
+#include <limits>
 
 using namespace std;
 
@@ -62,14 +63,18 @@ void UIHandler::displayMenu2() {
     while(true) {
         int choice = getInt("Enter choice: ");
         if (choice < 1 || choice > 4) {
-        cout << "Invalid option.\n";
-        continue;
-        } 
-        else if (choice == 1 && message.empty()) {
-            message = getLine("Enter a message to encrypt: ");
+            cout << "Invalid option.\n";
             continue;
-        } else if (choice == 1 && !message.empty()) {
-            cout << "You must enter a message to encrypt.\n";
+        } 
+        else if (choice == 1) {
+            message = getLine("Enter a message to encrypt: ");
+            cout << "Message set to: " << message << endl;
+            continue;
+        } else if (choice == 2 && message.empty()) {
+            cout << "You must enter a message first. Select option 1.\n";
+            continue;
+        } else if (choice == 3 && message.empty()) {
+            cout << "You must enter a message first. Select option 1.\n";
             continue;
         } else if (choice == 2 && !message.empty()) {
             displayMenu3a(message);
@@ -97,7 +102,7 @@ void UIHandler::displayMenu3a(string& message) {
     cout << string(width, '*') << "\n";
 
     int gridSize = 0;
-    int rounds = 1;
+    int rounds = 1; // One-round encryption always uses 1 round
 
     while (true) {
         int choice = getInt("Enter choice: ");
@@ -107,15 +112,15 @@ void UIHandler::displayMenu3a(string& message) {
         } else if (choice == 1) {
             gridSize = getInt("Enter grid size (must be odd): ");
             if (gridSize % 2 == 0) {
-                cout << "Grid size must be odd. Using default grid size.\n";
-                gridSize = 0;
+                cout << "Grid size must be odd. Try again.\n";
                 continue;
             }
+            cout << "Grid size set to: " << gridSize << endl;
             continue;
         } else if (choice == 2) {
             cout << "Using automatic grid size.\n";
-            handleEncryption(message, rounds, gridSize);
-            break;
+            gridSize = 0; // 0 means auto
+            continue;
         } else if (choice == 3) {
             cout << "Printing the grid and the encoded message...\n";
             handleEncryption(message, rounds, gridSize);
@@ -137,7 +142,8 @@ void UIHandler::displayMenu3b(string& message) {
     printMenuLine("3. Back", width);
     cout << string(width, '*') << "\n";
 
-    int rounds = 0;
+    int rounds = 3; // Default to 3 rounds
+    int gridSize = 0; // Default to automatic grid size
 
     while (true) {
         int choice = getInt("Enter choice: ");
@@ -146,10 +152,15 @@ void UIHandler::displayMenu3b(string& message) {
             continue;
         } else if (choice == 1) {
             rounds = getInt("Enter the number of rounds: ");
+            if (rounds <= 0) {
+                cout << "Number of rounds must be positive. Setting to default (3).\n";
+                rounds = 3;
+            } else {
+                cout << "Number of rounds set to: " << rounds << endl;
+            }
             continue;
         } else if (choice == 2) {
-            cout << "Printing the grid and the encoded message for each round...\n";
-            int gridSize = 0;
+            cout << "Printing the grid and the encoded message for " << rounds << " rounds...\n";
             handleEncryption(message, rounds, gridSize);
             break;
         } else if (choice == 3) {
@@ -160,20 +171,61 @@ void UIHandler::displayMenu3b(string& message) {
 }
 
 void UIHandler::handleEncryption(string& message, int& rounds, int& gridSize) {
-    // TODO: Prompt user, get message & rounds, call Encryptor
     Encryptor encryptor;
-    string encryptedMessage = encryptor.encrypt(message, rounds, gridSize);
-    cout << "Encrypted message: " << encryptedMessage << endl;
+    
+    // For multi-round encryption, we need to show each round's results
+    if (rounds > 1) {
+        string intermediateMsg = message;
+        
+        for (int r = 1; r <= rounds; r++) {
+            cout << "\n--- Round " << r << " of " << rounds << " ---\n";
+            int currentGridSize = (gridSize == 0) ? encryptor.computeGrid(intermediateMsg) : gridSize;
+            cout << "Using grid size: " << currentGridSize << endl;
+            
+            // Process just one round at a time
+            intermediateMsg = encryptor.processEncryption(intermediateMsg, currentGridSize);
+            
+            cout << "After round " << r << ", message is: " << intermediateMsg << endl;
+        }
+        
+        cout << "\nFinal encrypted message: " << intermediateMsg << endl;
+    } else {
+        // One-round encryption
+        string encryptedMessage = encryptor.encrypt(message, rounds, gridSize);
+        cout << "Encrypted message: " << encryptedMessage << endl;
+    }
 }
 
 void UIHandler::handleDecryption() {
-    // TODO: Prompt user, get encrypted message & rounds, call Decryptor
     string encryptedMessage = getLine("Enter the encrypted message: ");
     int rounds = getInt("Enter the number of rounds used in encryption: ");
+    
+    if (rounds <= 0) {
+        cout << "Number of rounds must be positive. Using 1 round.\n";
+        rounds = 1;
+    }
 
     Decryptor decryptor;
-    string decryptedMessage = decryptor.decrypt(encryptedMessage, rounds);
-    cout << "Decrypted message: " << decryptedMessage << endl;
+    
+    // For multi-round decryption, show each intermediate step
+    if (rounds > 1) {
+        string intermediateMsg = encryptedMessage;
+        
+        for (int r = 1; r <= rounds; r++) {
+            cout << "\n--- Decryption Round " << r << " of " << rounds << " ---\n";
+            
+            // Process just one round of decryption
+            intermediateMsg = decryptor.processDecryption(intermediateMsg);
+            
+            cout << "After decryption round " << r << ", message is: " << intermediateMsg << endl;
+        }
+        
+        cout << "\nFinal decrypted message: " << intermediateMsg << endl;
+    } else {
+        // One-round decryption
+        string decryptedMessage = decryptor.decrypt(encryptedMessage, rounds);
+        cout << "Decrypted message: " << decryptedMessage << endl;
+    }
 }
 
 string UIHandler::getLine(const string& prompt) {
@@ -190,10 +242,10 @@ int UIHandler::getInt(const string& prompt) {
         cin >> value;
         if (cin.fail()) {
             cin.clear(); 
-            // cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Discard invalid input
+            cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Discard invalid input
             cout << "Invalid input. Please enter an integer.\n";
         } else {
-            // cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Discard the rest of the line
+            cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Discard the rest of the line
             return value;
         }
     }

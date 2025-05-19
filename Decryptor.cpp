@@ -12,11 +12,16 @@ string Decryptor::decrypt(const string& encryptedMessage, int rounds) {
 }
 
 string Decryptor::processDecryption(const string& encryptedMessage) {
-    // TODO: Implement grid reconstruction from columns and diamond decoding
     // Determine grid size (must be odd and such that size*size >= encryptedMessage.length())
     int length = static_cast<int>(encryptedMessage.length());
     int size = 1;
     while (size * size < length) size += 2;
+    
+    // Ensure we have a complete grid (length should equal size*size)
+    if (length != size * size) {
+        // This should not happen with proper encryption, but handle just in case
+        return "Error: Invalid encrypted message length";
+    }
 
     Grid grid(size);
 
@@ -31,5 +36,6 @@ string Decryptor::processDecryption(const string& encryptedMessage) {
     }
 
     // Extract the message from the grid in diamond order
-    return grid.extractMessage();
+    string decryptedMessage = grid.extractMessage();
+    return decryptedMessage;
 }
