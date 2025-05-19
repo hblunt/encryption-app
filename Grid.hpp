@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include <cmath> // Add at top of file
 
 class Grid {
 private:
@@ -12,10 +13,10 @@ private:
 public:
     std::vector<std::vector<char>> matrix;
     Grid(int gridSize);
-    void fillWithMessage(const std::string& message);
+    void fillWithMessage(const std::string& text_to_place_in_diamond);
     void fillRandom();
     std::string readColumnWise() const;
-    std::string extractMessage() const;
+    std::string extractMessage(bool stopAtPeriod) const;
     void print() const;
 };
 

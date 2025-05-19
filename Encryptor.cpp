@@ -20,33 +20,24 @@ string Encryptor::encrypt(const string& message, int rounds, int gridSize) {
     return result;
 }
 
-string Encryptor::processEncryption(const string& message, int gridSize) {
-    Grid grid(gridSize);
-    
-    // First clean the message (remove spaces, convert to uppercase)
-    string cleanMessage;
-    for (char c : message) {
-        if (isalpha(c) || c == '.') {
-            cleanMessage += toupper(c);
-        }
-    }
-    
-    // Ensure message ends with a period
-    if (!cleanMessage.empty() && cleanMessage.back() != '.') {
-        cleanMessage += '.';
-    }
-    
-    // Fill the grid with the message in diamond pattern
-    grid.fillWithMessage(cleanMessage);
-    
-    // Fill empty cells with random uppercase letters
+// In Encryptor.cpp
+string Encryptor::processEncryption(const string& message_for_this_round, int gridSize_for_this_round) {
+    Grid grid(gridSize_for_this_round);
+
+    // REMOVE the block that did:
+    // string cleanMessage;
+    // for (char c : message) { ... }
+    // if (!cleanMessage.empty() && cleanMessage.back() != '.') { ... }
+    // grid.fillWithMessage(cleanMessage);
+
+    // USE message_for_this_round DIRECTLY:
+    grid.fillWithMessage(message_for_this_round); 
+
     grid.fillRandom();
-    
-    // Display the grid
-    cout << "\nGrid after filling with message and random letters:\n";
+
+    cout << "\nGrid after filling with message and random letters:\n"; // As per spec [cite: 13]
     grid.print();
-    
-    // Read column-wise to create the encrypted message
+
     return grid.readColumnWise();
 }
 

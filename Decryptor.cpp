@@ -3,23 +3,27 @@
 
 using namespace std;
 
-string Decryptor::decrypt(const string& encryptedMessage, int rounds) {
-    string result = encryptedMessage;
+std::string Decryptor::decrypt(const std::string& encryptedMessage, int rounds) {
+    std::string currentProcessingMessage = encryptedMessage;
     for (int i = 0; i < rounds; ++i) {
-        result = processDecryption(result);
+        bool isFinalRoundForOriginalMessage = (i == rounds - 1); // True if this is the last decryption step overall
+        currentProcessingMessage = processDecryption(currentProcessingMessage, isFinalRoundForOriginalMessage);
+        
+        // Check for error and propagate immediately
+        if (currentProcessingMessage.rfind("Error:", 0) == 0) {
+            return currentProcessingMessage; 
+        }
     }
-    return result;
+    return currentProcessingMessage;
 }
 
-string Decryptor::processDecryption(const string& encryptedMessage) {
-    // Determine grid size (must be odd and such that size*size >= encryptedMessage.length())
+// Updated signature and call to grid.extractMessage
+std::string Decryptor::processDecryption(const std::string& encryptedMessage, bool isFinalExtraction) {
     int length = static_cast<int>(encryptedMessage.length());
     int size = 1;
     while (size * size < length) size += 2;
     
-    // Ensure we have a complete grid (length should equal size*size)
     if (length != size * size) {
-        // This should not happen with proper encryption, but handle just in case
         return "Error: Invalid encrypted message length";
     }
 
@@ -35,7 +39,20 @@ string Decryptor::processDecryption(const string& encryptedMessage) {
         }
     }
 
-    // Extract the message from the grid in diamond order
-    string decryptedMessage = grid.extractMessage();
+    // Extract message and limit its length based on the input length
+    string decryptedMessage = grid.extractMessage(isFinalExtraction);
+    
+    // If this is not the final extraction, we need to preserve exact length
+    if (!isFinalExtraction) {
+        // Calculate how many characters we expect
+        int expectedLength = static_cast<int>(sqrt(length)); // Square root of input length
+        expectedLength = expectedLength * expectedLength; // Square it to get grid size
+        
+        // Ensure the message is exactly the right length
+        if (decryptedMessage.length() > expectedLength) {
+            decryptedMessage = decryptedMessage.substr(0, expectedLength);
+        }
+    }
+
     return decryptedMessage;
 }

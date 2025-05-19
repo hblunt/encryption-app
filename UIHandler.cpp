@@ -171,27 +171,43 @@ void UIHandler::displayMenu3b(string& message) {
 }
 
 void UIHandler::handleEncryption(string& message, int& rounds, int& gridSize) {
+        // In UIHandler.cpp, inside void UIHandler::handleEncryption(...)
+
     Encryptor encryptor;
-    
-    // For multi-round encryption, we need to show each round's results
+    string current_message_state = message; // Original message from user input
+
+    // ADD THIS BLOCK for initial message preparation
+    string prepared_message;
+    for (char c : current_message_state) {
+        if (isalpha(c)) { // Keep only alphabetic characters
+            prepared_message += toupper(c);
+        }
+        // Spaces and other symbols are removed
+    }
+    // Append a period if it's not already the last character or if empty
+    if (prepared_message.empty() || prepared_message.back() != '.') {
+        prepared_message += '.';
+    }
+    current_message_state = prepared_message; // Use this for encryption
+
     if (rounds > 1) {
-        string intermediateMsg = message;
-        
+        string intermediateMsg = current_message_state; // Start with the prepared message
+
         for (int r = 1; r <= rounds; r++) {
             cout << "\n--- Round " << r << " of " << rounds << " ---\n";
-            int currentGridSize = (gridSize == 0) ? encryptor.computeGrid(intermediateMsg) : gridSize;
-            cout << "Using grid size: " << currentGridSize << endl;
-            
-            // Process just one round at a time
-            intermediateMsg = encryptor.processEncryption(intermediateMsg, currentGridSize);
-            
+            // computeGrid should use the current state of the message for this round
+            int currentRoundGridSize = (gridSize == 0) ? encryptor.computeGrid(intermediateMsg) : gridSize;
+            cout << "Using grid size: " << currentRoundGridSize << endl;
+
+            // Call processEncryption, which should now expect a 'ready-to-encrypt' string
+            intermediateMsg = encryptor.processEncryption(intermediateMsg, currentRoundGridSize); 
+
             cout << "After round " << r << ", message is: " << intermediateMsg << endl;
         }
-        
         cout << "\nFinal encrypted message: " << intermediateMsg << endl;
-    } else {
-        // One-round encryption
-        string encryptedMessage = encryptor.encrypt(message, rounds, gridSize);
+    } else { // Single round
+        int currentRoundGridSize = (gridSize == 0) ? encryptor.computeGrid(current_message_state) : gridSize; // Use prepared message
+        string encryptedMessage = encryptor.processEncryption(current_message_state, currentRoundGridSize);
         cout << "Encrypted message: " << encryptedMessage << endl;
     }
 }
@@ -207,23 +223,59 @@ void UIHandler::handleDecryption() {
 
     Decryptor decryptor;
     
-    // For multi-round decryption, show each intermediate step
     if (rounds > 1) {
         string intermediateMsg = encryptedMessage;
-        
         for (int r = 1; r <= rounds; r++) {
             cout << "\n--- Decryption Round " << r << " of " << rounds << " ---\n";
             
-            // Process just one round of decryption
-            intermediateMsg = decryptor.processDecryption(intermediateMsg);
+            // Calculate grid size for this round
+            int gridSize = 1;
+            while (gridSize * gridSize < intermediateMsg.length()) {
+                gridSize += 2;
+            }
+            cout << "Grid size for this round: " << gridSize << endl;
+            
+            // Process decryption for this round
+            bool isFinalExtraction = (r == rounds);
+            intermediateMsg = decryptor.processDecryption(intermediateMsg, isFinalExtraction);
+            
+            if (intermediateMsg.rfind("Error:", 0) == 0) {
+                cout << intermediateMsg << endl;
+                break;
+            }
             
             cout << "After decryption round " << r << ", message is: " << intermediateMsg << endl;
+            
+            // If this is not the final round, we need to prepare for the next round
+            if (r < rounds) {
+                // Find the largest odd number whose square is less than or equal to the current message length
+                int nextGridSize = 1;
+                while ((nextGridSize + 2) * (nextGridSize + 2) <= intermediateMsg.length()) {
+                    nextGridSize += 2;
+                }
+                
+                // Calculate the target length (perfect square of the odd number)
+                int targetLength = nextGridSize * nextGridSize;
+                
+                // Calculate how many characters to remove
+                int charsToRemove = intermediateMsg.length() - targetLength;
+                
+                if (charsToRemove > 0) {
+                    cout << "Trimming " << charsToRemove << " characters to get a perfect square length of " 
+                         << targetLength << " (grid size " << nextGridSize << ")" << endl;
+                    
+                    intermediateMsg = intermediateMsg.substr(0, targetLength);
+                    cout << "Trimmed message: " << intermediateMsg << endl;
+                }
+            }
         }
         
-        cout << "\nFinal decrypted message: " << intermediateMsg << endl;
+        if (intermediateMsg.rfind("Error:", 0) != 0) {
+            cout << "\nFinal decrypted message: " << intermediateMsg << endl;
+        }
     } else {
-        // One-round decryption
-        string decryptedMessage = decryptor.decrypt(encryptedMessage, rounds);
+        // Single-round decryption
+        string decryptedMessage = decryptor.processDecryption(encryptedMessage, true);
         cout << "Decrypted message: " << decryptedMessage << endl;
     }
 }

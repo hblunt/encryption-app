@@ -12,61 +12,69 @@ using namespace std;
 Grid::Grid(int gridSize) : size(gridSize), matrix(gridSize, vector<char>(gridSize, ' ')) {
     srand(static_cast<unsigned>(std::time(nullptr)));
 }
+// In Grid.cpp
+// void Grid::fillWithMessage(const string& original) { // Original parameter name
+void Grid::fillWithMessage(const string& text_to_place_in_diamond) { // Suggested new parameter name
 
-void Grid::fillWithMessage(const string& original) {
-    // TODO: Implement diamond pattern placement
-    string message;
-    for (char c : original) {
-        if (isalpha(c)) {
-            message += toupper(c);
-        }
-    }
+    // REMOVE the block that did:
+    // string message;
+    // for (char c : original) {
+    //     if (isalpha(c)) { message += toupper(c); }
+    // }
+    // if (message.empty() || message.back() != '.') { message += '.'; }
 
-    if (message.empty() || message.back() != '.') {
-        message += '.';
-    }
-
+    // The rest of your diamond filling logic should remain,
+    // but it must use 'text_to_place_in_diamond' and 'text_to_place_in_diamond.length()'
+    // instead of the internal 'message' variable you were creating.
+    // For example:
     int mid = size / 2;
     int msgIndex = 0;
 
-    // Fill the diamond from the outermost layer inwards
-    for (int layer = mid; layer >= 0 && msgIndex < message.length(); --layer) {
-        // 1. Start at leftmost cell of this layer
+    for (int layer = mid; layer >= 0 && msgIndex < text_to_place_in_diamond.length(); --layer) {
         int i = mid;
         int j = mid - layer;
-        if (j < 0 || j >= size) continue;
-
-        // Up and right to top
+        // ... (Your existing diamond traversal logic using text_to_place_in_diamond[msgIndex++])
+        // For example, a line like:
+        // if (msgIndex < message.length()) matrix[i][j] = message[msgIndex++];
+        // becomes:
+        // if (msgIndex < text_to_place_in_diamond.length()) matrix[i][j] = text_to_place_in_diamond[msgIndex++];
+        // Ensure all such occurrences are updated.
+        // (The loops from your provided Grid.cpp are quite specific, ensure they correctly use text_to_place_in_diamond)
+         // Path 1 from your code
         while (i > mid - layer && j < mid) {
-            if (msgIndex < message.length())
-                matrix[i][j] = message[msgIndex++];
-            i--;
-            j++;
+            if (msgIndex < text_to_place_in_diamond.length()) matrix[i][j] = text_to_place_in_diamond[msgIndex++]; else break;
+            i--; j++;
+            if (msgIndex >= text_to_place_in_diamond.length() && layer > 0 && i <= mid - layer && j >= mid) break; 
         }
-        // Top to rightmost (right and down)
+        if (msgIndex >= text_to_place_in_diamond.length() && layer > 0 && !(layer == 0 && i == mid && j == mid)) break;
+
+        // Path 2 from your code
         while (i < mid && j < mid + layer) {
-            if (msgIndex < message.length())
-                matrix[i][j] = message[msgIndex++];
-            i++;
-            j++;
+            if (msgIndex < text_to_place_in_diamond.length()) matrix[i][j] = text_to_place_in_diamond[msgIndex++]; else break;
+            i++; j++;
+            if (msgIndex >= text_to_place_in_diamond.length() && layer > 0 && i >= mid && j >= mid + layer) break;
         }
-        // Rightmost to bottom (down and left)
+        if (msgIndex >= text_to_place_in_diamond.length() && layer > 0 && !(layer == 0 && i == mid && j == mid)) break;
+
+        // Path 3 from your code
         while (i < mid + layer && j > mid) {
-            if (msgIndex < message.length())
-                matrix[i][j] = message[msgIndex++];
-            i++;
-            j--;
+            if (msgIndex < text_to_place_in_diamond.length()) matrix[i][j] = text_to_place_in_diamond[msgIndex++]; else break;
+            i++; j--;
+            if (msgIndex >= text_to_place_in_diamond.length() && layer > 0 && i >= mid + layer && j <= mid) break;
         }
-        // Bottom to leftmost (left and up)
+        if (msgIndex >= text_to_place_in_diamond.length() && layer > 0 && !(layer == 0 && i == mid && j == mid)) break;
+
+        // Path 4 from your code
         while (i > mid && j > mid - layer) {
-            if (msgIndex < message.length())
-                matrix[i][j] = message[msgIndex++];
-            i--;
-            j--;
+            if (msgIndex < text_to_place_in_diamond.length()) matrix[i][j] = text_to_place_in_diamond[msgIndex++]; else break;
+            i--; j--;
+            if (msgIndex >= text_to_place_in_diamond.length() && layer > 0 && i <= mid && j <= mid - layer) break;
         }
-        // Fill the center if we're at the innermost layer
-        if (layer == 0 && msgIndex < message.length()) {
-            matrix[mid][mid] = message[msgIndex++];
+        if (msgIndex >= text_to_place_in_diamond.length() && layer > 0 && !(layer == 0 && i == mid && j == mid)) break;
+
+        // Center cell
+        if (layer == 0 && msgIndex < text_to_place_in_diamond.length()) {
+            matrix[mid][mid] = text_to_place_in_diamond[msgIndex++];
         }
     }
 }
@@ -94,53 +102,80 @@ string Grid::readColumnWise() const {
     return result;
 }
 
-string Grid::extractMessage() const {
+std::string Grid::extractMessage(bool stopAtPeriod) const {
+    std::string result;
     int mid = size / 2;
-    string result;
 
+    // Your existing diamond traversal logic
     for (int layer = mid; layer >= 0; --layer) {
-        // 1. Start at leftmost cell of this layer
         int i = mid;
         int j = mid - layer;
-        if (j < 0 || j >= size) continue;
+        
+        // This is a simplified representation of your 4 paths and center point.
+        // You'll need to integrate the 'stopAtPeriod' check into each character read operation
+        // within your existing diamond traversal loops.
 
-        // Up and right to top
+        // Example for one path (you have 4 such loops + center cell logic)
+        // Path 1: Up and right to top (from your original extractMessage)
         while (i > mid - layer && j < mid) {
-            char ch = matrix[i][j];
-            if (ch == '.') return result;
-            result += ch;
+            // It's good practice to ensure i and j are within bounds [0, size-1]
+            // before accessing matrix[i][j], though your loop conditions might already ensure this.
+            if (i >= 0 && i < size && j >= 0 && j < size) { // Basic bounds check
+                char ch = matrix[i][j];
+                if (stopAtPeriod && ch == '.') {
+                    return result; // Stop and return if flag is true and char is '.'
+                }
+                result += ch;
+            }
             i--;
             j++;
         }
-        // Top to rightmost (right and down)
+        // Path 2: Top to rightmost
         while (i < mid && j < mid + layer) {
-            char ch = matrix[i][j];
-            if (ch == '.') return result;
-            result += ch;
+             if (i >= 0 && i < size && j >= 0 && j < size) {
+                char ch = matrix[i][j];
+                if (stopAtPeriod && ch == '.') {
+                    return result;
+                }
+                result += ch;
+            }
             i++;
             j++;
         }
-        // Rightmost to bottom (down and left)
+        // Path 3: Rightmost to bottom
         while (i < mid + layer && j > mid) {
-            char ch = matrix[i][j];
-            if (ch == '.') return result;
-            result += ch;
+            if (i >= 0 && i < size && j >= 0 && j < size) {
+                char ch = matrix[i][j];
+                if (stopAtPeriod && ch == '.') {
+                    return result;
+                }
+                result += ch;
+            }
             i++;
             j--;
         }
-        // Bottom to leftmost (left and up)
+        // Path 4: Bottom to leftmost
         while (i > mid && j > mid - layer) {
-            char ch = matrix[i][j];
-            if (ch == '.') return result;
-            result += ch;
+            if (i >= 0 && i < size && j >= 0 && j < size) {
+                char ch = matrix[i][j];
+                if (stopAtPeriod && ch == '.') {
+                    return result;
+                }
+                result += ch;
+            }
             i--;
             j--;
         }
+
         // Center cell for innermost layer
         if (layer == 0) {
-            char ch = matrix[mid][mid];
-            if (ch == '.') return result;
-            result += ch;
+            if (mid >= 0 && mid < size) { // Check bounds for mid
+                 char ch = matrix[mid][mid];
+                 if (stopAtPeriod && ch == '.') {
+                     return result;
+                 }
+                 result += ch;
+            }
         }
     }
     return result;
