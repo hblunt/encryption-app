@@ -6,7 +6,7 @@
 
 using namespace std;
 
-void HandleException::handleInvalidInput() {\
+void HandleException::handleInvalidInput() {
     cin.clear(); // Clear the error flag
     cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Discard invalid input
 }

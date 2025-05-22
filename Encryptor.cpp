@@ -24,18 +24,11 @@ string Encryptor::encrypt(const string& message, int rounds, int gridSize) {
 string Encryptor::processEncryption(const string& message_for_this_round, int gridSize_for_this_round) {
     Grid grid(gridSize_for_this_round);
 
-    // REMOVE the block that did:
-    // string cleanMessage;
-    // for (char c : message) { ... }
-    // if (!cleanMessage.empty() && cleanMessage.back() != '.') { ... }
-    // grid.fillWithMessage(cleanMessage);
-
-    // USE message_for_this_round DIRECTLY:
     grid.fillWithMessage(message_for_this_round); 
 
     grid.fillRandom();
 
-    cout << "\nGrid after filling with message and random letters:\n"; // As per spec [cite: 13]
+    cout << "\nGrid after filling with message and random letters:\n";
     grid.print();
 
     return grid.readColumnWise();

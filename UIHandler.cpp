@@ -31,27 +31,31 @@ void UIHandler::displayMenu() {
     cout << string(width, '*') << "\n";
 
     while (true) {
+
+        int choice = getInt("Enter choice: ");
         try {
-            int choice = getInt("Enter choice: ");
-        if (choice < 1 || choice > 3) {
-            throw HandleException("Invalid option. Please try again.");
-            continue;
-        } else if (choice == 1) {
-            displayMenu2a();
-            break;
-        } else if (choice == 2) {
-            displayMenu2b();
-            break;
-        } else if (choice == 3) {
-            cout << "Exiting program...\n";
-            exit(0);
-        }
+            if (choice < 1 || choice > 3) {
+                throw HandleException("Out of range. Please try again.\nPress Enter to continue.");
+                continue;
+            } else if (choice == 1) {
+                displayMenu2a();
+                break;
+            } else if (choice == 2) {
+                displayMenu2b();
+                break;
+            } else if (choice == 3) {
+                cout << "Exiting program...\n";
+                exit(0);
+            }
+            else {
+                throw HandleException("Invalid choice. Please try again.\nPress Enter to continue.");
+                continue;
+            }
         } catch (const HandleException& e) {
             cout << e.what() << endl;
             HandleException::handleInvalidInput();
             continue;
         }
-        
     }
 }
 
@@ -69,31 +73,39 @@ void UIHandler::displayMenu2a() {
     string message = "";
 
     while(true) {
-        int choice = getInt("Enter choice: ");
-        if (choice < 1 || choice > 4) {
-            cout << "Invalid option.\n";
+        try {
+            int choice = getInt("Enter choice: ");
+            if (choice < 1 || choice > 4) {
+                throw HandleException("Out of range. Please try again.\nPress Enter to continue.");
+                continue;
+            } 
+            else if (choice == 1) {
+                message = getLine("Enter a message to encrypt: ");
+                cout << "Message set to: " << message << endl;
+                continue;
+            } else if (choice == 2 && message.empty()) {
+                throw HandleException("You must enter a message before selecting this option. Select option 1.\nPress Enter to continue.");
+                continue;
+            } else if (choice == 3 && message.empty()) {
+                throw HandleException("You must enter a message before selecting this option. Select option 1.\nPress Enter to continue.");
+                continue;
+            } else if (choice == 2 && !message.empty()) {
+                displayMenu3a(message);
+                break;
+            } else if (choice == 3 && !message.empty()) {
+                displayMenu3b(message);
+                break;
+            } else if (choice == 4) {
+                displayMenu();
+                break;
+            } else {
+                throw HandleException("Invalid choice. Please try again.\nPress Enter to continue.");
+                continue;
+            }
+        } catch(const HandleException& e) {
+            cout << e.what() << endl;
+            HandleException::handleInvalidInput();
             continue;
-        } 
-        else if (choice == 1) {
-            message = getLine("Enter a message to encrypt: ");
-            cout << "Message set to: " << message << endl;
-            continue;
-        } else if (choice == 2 && message.empty()) {
-            cout << "You must enter a message first. Select option 1.\n";
-            continue;
-        } else if (choice == 3 && message.empty()) {
-            cout << "You must enter a message first. Select option 1.\n";
-            continue;
-        } else if (choice == 2 && !message.empty()) {
-            displayMenu3a(message);
-            break;
-        } else if (choice == 3 && !message.empty()) {
-            displayMenu3b(message);
-            break;
-        } else if (choice == 4) {
-            cout << "Returning to main menu...\n";
-            displayMenu();
-            break;
         }
     }
 }
@@ -110,43 +122,48 @@ void UIHandler::displayMenu2b(){
     cout << string(width, '*') << "\n";
 
     string message = "";
-    int rounds = 1; // Default to 1 round
+    int rounds = 1;
 
     while(true) {
-        int choice = getInt("Enter choice: ");
-        if (choice < 1 || choice > 4) {
-            cout << "Invalid option.\n";
+        try {
+            int choice = getInt("Enter choice: ");
+            if (choice < 1 || choice > 4) {
+                throw HandleException("Out of range. Please try again.\nPress Enter to continue.");
+                continue;
+            } 
+            else if (choice == 1) {
+                message = getLine("Enter a message to decrypt: ");
+                cout << "Message set to: " << message << endl;
+                continue;
+            } else if (choice == 2 && !message.empty()) {
+                rounds = getInt("Enter the number of rounds used in encryption: ");
+                continue;
+            } else if (choice == 2 && message.empty()) {
+                throw HandleException("You must enter a message before selecting this option. Select option 1.\nPress Enter to continue.");
+                continue;
+            } else if (choice == 3 && rounds <= 0) {
+                throw HandleException("Rounds must be positive. Please enter a valid number.\nPress Enter to continue.");
+                continue;
+            } else if (choice == 3 && message.empty()) {
+                throw HandleException("You must enter a message before selecting this option. Select option 1.\nPress Enter to continue.");
+                continue;
+            } else if (choice == 2 && !message.empty()) {
+                handleDecryption(message, rounds);
+                break;
+            } else if (choice == 3 && !message.empty()) {
+                handleDecryption(message, rounds);
+                break;
+            } else if (choice == 4) {
+                displayMenu();
+                break;
+            } else {
+                throw HandleException("Invalid choice. Please try again.\nPress Enter to continue.");
+                continue;
+            }
+        } catch (const HandleException& e) {
+            cout << e.what() << endl;
+            HandleException::handleInvalidInput();
             continue;
-        } 
-        else if (choice == 1) {
-            message = getLine("Enter a message to decrypt: ");
-            cout << "Message set to: " << message << endl;
-            continue;
-        } else if (choice == 2 && !message.empty()) {
-            rounds = getInt("Enter the number of rounds used in encryption: ");
-            continue;
-        } else if (choice == 2 && message.empty()) {
-            cout << "You must enter a message before entering rounds. Select option 1.\n";
-            continue;
-        } else if (choice == 3 && rounds <= 0) {
-            cout << "Number of rounds must be positive. Setting to default (1).\n";
-            rounds = 1;
-        } else if (choice == 3 && message.empty()) {
-            cout << "You must enter a message first. Select option 1.\n";
-            continue;
-        }
-        else if (choice == 3 && message.empty()) {
-            cout << "You must enter a message first. Select option 1.\n";
-            continue;
-        } else if (choice == 2 && !message.empty()) {
-            handleDecryption(message, rounds);
-            break;
-        } else if (choice == 3 && !message.empty()) {
-            handleDecryption(message, rounds);
-            break;
-        } else if (choice == 4) {
-            displayMenu();
-            break;
         }
     }
 }
@@ -163,32 +180,41 @@ void UIHandler::displayMenu3a(string& message) {
     cout << string(width, '*') << "\n";
 
     int gridSize = 0;
-    int rounds = 1; // One-round encryption always uses 1 round
+    int rounds = 1;
 
     while (true) {
         int choice = getInt("Enter choice: ");
-        if (choice < 1 || choice > 4) {
-            cout << "Invalid option.\n";
-            continue;
-        } else if (choice == 1) {
-            gridSize = getInt("Enter grid size (must be odd): ");
-            if (gridSize % 2 == 0) {
-                cout << "Grid size must be odd. Try again.\n";
+        try{
+            if (choice < 1 || choice > 4) {
+                throw HandleException("Out of range. Please try again.\nPress Enter to continue.");
+                continue;
+            } else if (choice == 1) {
+                gridSize = getInt("Enter grid size (must be odd): ");
+                if (gridSize % 2 == 0) {
+                    throw HandleException("Grid size must be odd. Please enter a valid number.\nPress Enter to continue.");
+                    continue;
+                }
+                cout << "Grid size set to: " << gridSize << endl;
+                continue;
+            } else if (choice == 2) {
+                cout << "Using automatic grid size.\n";
+                gridSize = 0; // 0 means auto
+                continue;
+            } else if (choice == 3) {
+                cout << "Printing the grid and the encoded message...\n";
+                handleEncryption(message, rounds, gridSize);
+                break;
+            } else if (choice == 4) {
+                displayMenu2a();
+                break;
+            } else {
+                throw HandleException("Invalid choice. Please try again.\nPress Enter to continue.");
                 continue;
             }
-            cout << "Grid size set to: " << gridSize << endl;
+        } catch (const HandleException& e) {
+            cout << e.what() << endl;
+            HandleException::handleInvalidInput();
             continue;
-        } else if (choice == 2) {
-            cout << "Using automatic grid size.\n";
-            gridSize = 0; // 0 means auto
-            continue;
-        } else if (choice == 3) {
-            cout << "Printing the grid and the encoded message...\n";
-            handleEncryption(message, rounds, gridSize);
-            break;
-        } else if (choice == 4) {
-            displayMenu2a();
-            break;
         }
     }
 }
@@ -203,53 +229,59 @@ void UIHandler::displayMenu3b(string& message) {
     printMenuLine("3. Back", width);
     cout << string(width, '*') << "\n";
 
-    int rounds = 3; // Default to 3 rounds
-    int gridSize = 0; // Default to automatic grid size
+    int rounds = 3;
+    int gridSize = 0;
 
     while (true) {
-        int choice = getInt("Enter choice: ");
-        if (choice < 1 || choice > 3) {
-            cout << "Invalid option.\n";
-            continue;
-        } else if (choice == 1) {
-            rounds = getInt("Enter the number of rounds: ");
-            if (rounds <= 0) {
-                cout << "Number of rounds must be positive. Setting to default (3).\n";
-                rounds = 3;
+        try{
+            int choice = getInt("Enter choice: ");
+            if (choice < 1 || choice > 3) {
+                throw HandleException("Out of range. Please try again.\nPress Enter to continue.");
+                continue;
+            } else if (choice == 1) {
+                rounds = getInt("Enter the number of rounds: ");
+                if (rounds <= 0) {
+                    cout << "Number of rounds must be positive. Setting to default (3).\n";
+                    rounds = 3;
+                } else {
+                    cout << "Number of rounds set to: " << rounds << endl;
+                }
+                continue;
+            } else if (choice == 2) {
+                cout << "Printing the grid and the encoded message for " << rounds << " rounds...\n";
+                handleEncryption(message, rounds, gridSize);
+                break;
+            } else if (choice == 3) {
+                displayMenu2a();
+                break;
             } else {
-                cout << "Number of rounds set to: " << rounds << endl;
+                throw HandleException("Invalid choice. Please try again.\nPress Enter to continue.");
+                continue;
             }
+        } catch (const HandleException& e) {
+            cout << e.what() << endl;
+            HandleException::handleInvalidInput();
             continue;
-        } else if (choice == 2) {
-            cout << "Printing the grid and the encoded message for " << rounds << " rounds...\n";
-            handleEncryption(message, rounds, gridSize);
-            break;
-        } else if (choice == 3) {
-            displayMenu2a();
-            break;
         }
     }
 }
 
 void UIHandler::handleEncryption(string& message, int& rounds, int& gridSize) {
-        // In UIHandler.cpp, inside void UIHandler::handleEncryption(...)
-
     Encryptor encryptor;
-    string current_message_state = message; // Original message from user input
+    string current_message_state = message;
 
-    // ADD THIS BLOCK for initial message preparation
+    // Prepare the message: remove non-alphabetic characters and convert to uppercase
     string prepared_message;
     for (char c : current_message_state) {
-        if (isalpha(c)) { // Keep only alphabetic characters
+        if (isalpha(c)) {
             prepared_message += toupper(c);
         }
-        // Spaces and other symbols are removed
     }
     // Append a period if it's not already the last character or if empty
     if (prepared_message.empty() || prepared_message.back() != '.') {
         prepared_message += '.';
     }
-    current_message_state = prepared_message; // Use this for encryption
+    current_message_state = prepared_message;
 
     if (rounds > 1) {
         string intermediateMsg = current_message_state; // Start with the prepared message
@@ -267,7 +299,7 @@ void UIHandler::handleEncryption(string& message, int& rounds, int& gridSize) {
         }
         cout << "\nFinal encrypted message: " << intermediateMsg << endl;
     } else { // Single round
-        int currentRoundGridSize = (gridSize == 0) ? encryptor.computeGrid(current_message_state) : gridSize; // Use prepared message
+        int currentRoundGridSize = (gridSize == 0) ? encryptor.computeGrid(current_message_state) : gridSize;
         string encryptedMessage = encryptor.processEncryption(current_message_state, currentRoundGridSize);
         cout << "Encrypted message: " << encryptedMessage << endl;
     }
@@ -335,24 +367,45 @@ void UIHandler::handleDecryption(string& message, int& rounds) {
 }
 
 string UIHandler::getLine(const string& prompt) {
-    cout << prompt;
     string input;
-    getline(cin >> ws, input);
-    return input;
+    while(true) {
+        try {
+            cout << prompt;
+            getline(cin, input);
+            if (input.empty()) {
+                throw HandleException("Input cannot be empty. Please try again.");
+            }
+            // Check for invalid characters (e.g., numbers or special characters)
+            for (char c : input) {
+                if (!isalpha(c) && c != ' ') {
+                    throw HandleException("Invalid character in input. Only letters and spaces are allowed.");
+                }
+            }
+            return input;
+        }
+        catch (const HandleException& e) {
+            cout << e.what() << endl;
+        }
+    }
 }
 
 int UIHandler::getInt(const string& prompt) {
     int value;
     while (true) {
-        cout << prompt;
-        cin >> value;
-        if (cin.fail()) {
-            cin.clear(); 
-            cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Discard invalid input
-            cout << "Invalid input. Please enter an integer.\n";
-        } else {
-            cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Discard the rest of the line
+        try {
+            cout << prompt;
+            cin >> value;
+            cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Clear input buffer
+            if (cin.fail()) {
+                throw HandleException("Invalid input. Please enter an integer.");
+            }
+            if (value < 0) {
+                throw HandleException("Negative numbers are not allowed. Please enter a positive integer.\nPress Enter to continue.");
+            }
             return value;
+        } catch (const HandleException& e) {
+            cout << e.what() << endl;
+            HandleException::handleInvalidInput();
         }
     }
 }

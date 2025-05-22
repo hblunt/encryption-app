@@ -1,5 +1,6 @@
 #include "Decryptor.hpp"
 #include "Grid.hpp"
+#include "HandleException.hpp"
 
 using namespace std;
 
@@ -24,7 +25,7 @@ std::string Decryptor::processDecryption(const std::string& encryptedMessage, bo
     while (size * size < length) size += 2;
     
     if (length != size * size) {
-        return "Error: Invalid encrypted message length";
+        throw HandleException("Error: Encrypted message length is not a perfect square.\nPress Enter to continue.");
     }
 
     Grid grid(size);
