@@ -1,6 +1,7 @@
 #include "UIHandler.hpp"
 #include "Encryptor.hpp"
 #include "Decryptor.hpp"
+#include "HandleException.hpp"
 #include <iostream>
 #include <string>
 #include <limits>
@@ -30,24 +31,31 @@ void UIHandler::displayMenu() {
     cout << string(width, '*') << "\n";
 
     while (true) {
-        int choice = getInt("Enter choice: ");
+        try {
+            int choice = getInt("Enter choice: ");
         if (choice < 1 || choice > 3) {
-            cout << "Invalid option.\n";
+            throw HandleException("Invalid option. Please try again.");
             continue;
         } else if (choice == 1) {
-            displayMenu2();
+            displayMenu2a();
             break;
         } else if (choice == 2) {
-            handleDecryption();
+            displayMenu2b();
             break;
         } else if (choice == 3) {
             cout << "Exiting program...\n";
             exit(0);
         }
+        } catch (const HandleException& e) {
+            cout << e.what() << endl;
+            HandleException::handleInvalidInput();
+            continue;
+        }
+        
     }
 }
 
-void UIHandler::displayMenu2() {
+void UIHandler::displayMenu2a() {
     const int width = 40;
     cout << "\n" << string(width, '*') << "\n";
     printMenuLine("Menu Level 2 - Encryption", width);
@@ -90,6 +98,59 @@ void UIHandler::displayMenu2() {
     }
 }
 
+void UIHandler::displayMenu2b(){
+    const int width = 80;
+    cout << "\n" << string(width, '*') << "\n";
+    printMenuLine("Menu Level 2 - Decryption", width);
+    printMenuLine("Select an option:", width);
+    printMenuLine("1. Enter a message", width);
+    printMenuLine("2. Enter the round number", width);
+    printMenuLine("3. For each round, print the grid and the corresponding decoded message", width);
+    printMenuLine("4. Back", width);
+    cout << string(width, '*') << "\n";
+
+    string message = "";
+    int rounds = 1; // Default to 1 round
+
+    while(true) {
+        int choice = getInt("Enter choice: ");
+        if (choice < 1 || choice > 4) {
+            cout << "Invalid option.\n";
+            continue;
+        } 
+        else if (choice == 1) {
+            message = getLine("Enter a message to decrypt: ");
+            cout << "Message set to: " << message << endl;
+            continue;
+        } else if (choice == 2 && !message.empty()) {
+            rounds = getInt("Enter the number of rounds used in encryption: ");
+            continue;
+        } else if (choice == 2 && message.empty()) {
+            cout << "You must enter a message before entering rounds. Select option 1.\n";
+            continue;
+        } else if (choice == 3 && rounds <= 0) {
+            cout << "Number of rounds must be positive. Setting to default (1).\n";
+            rounds = 1;
+        } else if (choice == 3 && message.empty()) {
+            cout << "You must enter a message first. Select option 1.\n";
+            continue;
+        }
+        else if (choice == 3 && message.empty()) {
+            cout << "You must enter a message first. Select option 1.\n";
+            continue;
+        } else if (choice == 2 && !message.empty()) {
+            handleDecryption(message, rounds);
+            break;
+        } else if (choice == 3 && !message.empty()) {
+            handleDecryption(message, rounds);
+            break;
+        } else if (choice == 4) {
+            displayMenu();
+            break;
+        }
+    }
+}
+
 void UIHandler::displayMenu3a(string& message) {
     const int width = 50;
     cout << "\n" << string(width, '*') << "\n";
@@ -126,7 +187,7 @@ void UIHandler::displayMenu3a(string& message) {
             handleEncryption(message, rounds, gridSize);
             break;
         } else if (choice == 4) {
-            displayMenu2();
+            displayMenu2a();
             break;
         }
     }
@@ -164,7 +225,7 @@ void UIHandler::displayMenu3b(string& message) {
             handleEncryption(message, rounds, gridSize);
             break;
         } else if (choice == 3) {
-            displayMenu2();
+            displayMenu2a();
             break;
         }
     }
@@ -212,19 +273,12 @@ void UIHandler::handleEncryption(string& message, int& rounds, int& gridSize) {
     }
 }
 
-void UIHandler::handleDecryption() {
-    string encryptedMessage = getLine("Enter the encrypted message: ");
-    int rounds = getInt("Enter the number of rounds used in encryption: ");
-    
-    if (rounds <= 0) {
-        cout << "Number of rounds must be positive. Using 1 round.\n";
-        rounds = 1;
-    }
+void UIHandler::handleDecryption(string& message, int& rounds) {
 
     Decryptor decryptor;
     
     if (rounds > 1) {
-        string intermediateMsg = encryptedMessage;
+        string intermediateMsg = message;
         for (int r = 1; r <= rounds; r++) {
             cout << "\n--- Decryption Round " << r << " of " << rounds << " ---\n";
             
@@ -275,7 +329,7 @@ void UIHandler::handleDecryption() {
         }
     } else {
         // Single-round decryption
-        string decryptedMessage = decryptor.processDecryption(encryptedMessage, true);
+        string decryptedMessage = decryptor.processDecryption(message, true);
         cout << "Decrypted message: " << decryptedMessage << endl;
     }
 }

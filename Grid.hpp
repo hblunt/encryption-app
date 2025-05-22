@@ -8,7 +8,6 @@
 class Grid {
 private:
     int size;
-    
 
 public:
     std::vector<std::vector<char>> matrix;
