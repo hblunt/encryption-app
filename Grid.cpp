@@ -16,46 +16,47 @@ Grid::Grid(int gridSize) : size(gridSize), matrix(gridSize, vector<char>(gridSiz
 void Grid::fillWithMessage(const string& diamondMessage) {
 
     int mid = size / 2;
-    int msgIndex = 0;
+    size_t msgIndex = 0;
+    size_t diamondLength = diamondMessage.length();
 
-    for (int layer = mid; layer >= 0 && msgIndex < diamondMessage.length(); --layer) {
+    for (int layer = mid; layer >= 0 && msgIndex < diamondLength; --layer) {
         int i = mid;
         int j = mid - layer;
 
          // Move diagonally right and up
         while (i > mid - layer && j < mid) {
-            if (msgIndex < diamondMessage.length()) matrix[i][j] = diamondMessage[msgIndex++]; else break;
+            if (msgIndex < diamondLength) matrix[i][j] = diamondMessage[msgIndex++]; else break;
             i--; j++;
-            if (msgIndex >= diamondMessage.length() && layer > 0 && i <= mid - layer && j >= mid) break; 
+            if (msgIndex >= diamondLength && layer > 0 && i <= mid - layer && j >= mid) break; 
         }
-        if (msgIndex >= diamondMessage.length() && layer > 0 && !(layer == 0 && i == mid && j == mid)) break;
+        if (msgIndex >= diamondLength && layer > 0 && !(layer == 0 && i == mid && j == mid)) break;
 
         // Move diagonally right and down
         while (i < mid && j < mid + layer) {
-            if (msgIndex < diamondMessage.length()) matrix[i][j] = diamondMessage[msgIndex++]; else break;
+            if (msgIndex < diamondLength) matrix[i][j] = diamondMessage[msgIndex++]; else break;
             i++; j++;
-            if (msgIndex >= diamondMessage.length() && layer > 0 && i >= mid && j >= mid + layer) break;
+            if (msgIndex >= diamondLength && layer > 0 && i >= mid && j >= mid + layer) break;
         }
-        if (msgIndex >= diamondMessage.length() && layer > 0 && !(layer == 0 && i == mid && j == mid)) break;
+        if (msgIndex >= diamondLength && layer > 0 && !(layer == 0 && i == mid && j == mid)) break;
 
         // Move diagonally left and down
         while (i < mid + layer && j > mid) {
-            if (msgIndex < diamondMessage.length()) matrix[i][j] = diamondMessage[msgIndex++]; else break;
+            if (msgIndex < diamondLength) matrix[i][j] = diamondMessage[msgIndex++]; else break;
             i++; j--;
-            if (msgIndex >= diamondMessage.length() && layer > 0 && i >= mid + layer && j <= mid) break;
+            if (msgIndex >= diamondLength && layer > 0 && i >= mid + layer && j <= mid) break;
         }
-        if (msgIndex >= diamondMessage.length() && layer > 0 && !(layer == 0 && i == mid && j == mid)) break;
+        if (msgIndex >= diamondLength && layer > 0 && !(layer == 0 && i == mid && j == mid)) break;
 
         // Move diagonally left and up
         while (i > mid && j > mid - layer) {
-            if (msgIndex < diamondMessage.length()) matrix[i][j] = diamondMessage[msgIndex++]; else break;
+            if (msgIndex < diamondLength) matrix[i][j] = diamondMessage[msgIndex++]; else break;
             i--; j--;
-            if (msgIndex >= diamondMessage.length() && layer > 0 && i <= mid && j <= mid - layer) break;
+            if (msgIndex >= diamondLength && layer > 0 && i <= mid && j <= mid - layer) break;
         }
-        if (msgIndex >= diamondMessage.length() && layer > 0 && !(layer == 0 && i == mid && j == mid)) break;
+        if (msgIndex >= diamondLength && layer > 0 && !(layer == 0 && i == mid && j == mid)) break;
 
         // Center cell
-        if (layer == 0 && msgIndex < diamondMessage.length()) {
+        if (layer == 0 && msgIndex < diamondLength) {
             matrix[mid][mid] = diamondMessage[msgIndex++];
         }
     }
