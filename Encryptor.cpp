@@ -20,7 +20,6 @@ string Encryptor::encrypt(const string& message, int rounds, int gridSize) {
     return result;
 }
 
-// In Encryptor.cpp
 string Encryptor::processEncryption(const string& message_for_this_round, int gridSize_for_this_round) {
     Grid grid(gridSize_for_this_round);
 
@@ -28,7 +27,7 @@ string Encryptor::processEncryption(const string& message_for_this_round, int gr
 
     grid.fillRandom();
 
-    cout << "\nGrid after filling with message and random letters:\n";
+    cout << "\nEncrypted grid:\n";
     grid.print();
 
     return grid.readColumnWise();

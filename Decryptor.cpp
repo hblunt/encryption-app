@@ -4,22 +4,23 @@
 
 using namespace std;
 
-std::string Decryptor::decrypt(const std::string& encryptedMessage, int rounds) {
-    std::string currentProcessingMessage = encryptedMessage;
+string Decryptor::decrypt(const string& encryptedMessage, int rounds) {
+    string currentProcessingMessage = encryptedMessage;
     for (int i = 0; i < rounds; ++i) {
-        bool isFinalRoundForOriginalMessage = (i == rounds - 1); // True if this is the last decryption step overall
-        currentProcessingMessage = processDecryption(currentProcessingMessage, isFinalRoundForOriginalMessage);
-        
-        // Check for error and propagate immediately
-        if (currentProcessingMessage.rfind("Error:", 0) == 0) {
-            return currentProcessingMessage; 
+        bool isFinalRoundForOriginalMessage = (i == rounds - 1);
+
+        // Process decryption for the current round
+        try {
+            currentProcessingMessage = processDecryption(currentProcessingMessage, isFinalRoundForOriginalMessage);
+        }
+        catch (const HandleException& e) {
+            return e.what();
         }
     }
     return currentProcessingMessage;
 }
 
-// Updated signature and call to grid.extractMessage
-std::string Decryptor::processDecryption(const std::string& encryptedMessage, bool isFinalExtraction) {
+string Decryptor::processDecryption(const string& encryptedMessage, bool isFinalExtraction) {
     int length = static_cast<int>(encryptedMessage.length());
     int size = 1;
     while (size * size < length) size += 2;
@@ -45,11 +46,9 @@ std::string Decryptor::processDecryption(const std::string& encryptedMessage, bo
     
     // If this is not the final extraction, we need to preserve exact length
     if (!isFinalExtraction) {
-        // Calculate how many characters we expect
-        int expectedLength = static_cast<int>(sqrt(length)); // Square root of input length
-        expectedLength = expectedLength * expectedLength; // Square it to get grid size
+        int expectedLength = static_cast<int>(sqrt(length));
+        expectedLength = expectedLength * expectedLength;
         
-        // Ensure the message is exactly the right length
         if (decryptedMessage.length() > expectedLength) {
             decryptedMessage = decryptedMessage.substr(0, expectedLength);
         }

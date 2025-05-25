@@ -16,7 +16,8 @@ void UIHandler::run() {
 
 // Helper function to print a menu line with padding and borders
 void printMenuLine(const string& text, int width) {
-    int padLen = width - 3 - static_cast<int>(text.length()); // 3 = 2 asterisks + 1 space
+    // 3 = 2 asterisks + 1 space
+    int padLen = width - 3 - static_cast<int>(text.length()); 
     cout << "* " << text << string(padLen, ' ') << "*\n";
 }
 
@@ -270,13 +271,14 @@ void UIHandler::handleEncryption(string& message, int& rounds, int& gridSize) {
     Encryptor encryptor;
     string current_message_state = message;
 
-    // Prepare the message: remove non-alphabetic characters and convert to uppercase
+    // Remove non-alphabetic characters and convert to uppercase
     string prepared_message;
     for (char c : current_message_state) {
         if (isalpha(c)) {
             prepared_message += toupper(c);
         }
     }
+
     // Append a period if it's not already the last character or if empty
     if (prepared_message.empty() || prepared_message.back() != '.') {
         prepared_message += '.';
@@ -292,13 +294,13 @@ void UIHandler::handleEncryption(string& message, int& rounds, int& gridSize) {
             int currentRoundGridSize = (gridSize == 0) ? encryptor.computeGrid(intermediateMsg) : gridSize;
             cout << "Using grid size: " << currentRoundGridSize << endl;
 
-            // Call processEncryption, which should now expect a 'ready-to-encrypt' string
             intermediateMsg = encryptor.processEncryption(intermediateMsg, currentRoundGridSize); 
 
             cout << "After round " << r << ", message is: " << intermediateMsg << endl;
         }
         cout << "\nFinal encrypted message: " << intermediateMsg << endl;
-    } else { // Single round
+    } else { 
+        // Single round encryption
         int currentRoundGridSize = (gridSize == 0) ? encryptor.computeGrid(current_message_state) : gridSize;
         string encryptedMessage = encryptor.processEncryption(current_message_state, currentRoundGridSize);
         cout << "Encrypted message: " << encryptedMessage << endl;
@@ -332,18 +334,17 @@ void UIHandler::handleDecryption(string& message, int& rounds) {
             
             cout << "After decryption round " << r << ", message is: " << intermediateMsg << endl;
             
-            // If this is not the final round, we need to prepare for the next round
+            // If not the final round, prepare for the next round
             if (r < rounds) {
-                // Find the largest odd number whose square is less than or equal to the current message length
+
+                // Find the largest odd number whose square is less than or equal to the current message to this length
                 int nextGridSize = 1;
                 while ((nextGridSize + 2) * (nextGridSize + 2) <= intermediateMsg.length()) {
                     nextGridSize += 2;
                 }
                 
-                // Calculate the target length (perfect square of the odd number)
                 int targetLength = nextGridSize * nextGridSize;
                 
-                // Calculate how many characters to remove
                 int charsToRemove = intermediateMsg.length() - targetLength;
                 
                 if (charsToRemove > 0) {
@@ -366,6 +367,8 @@ void UIHandler::handleDecryption(string& message, int& rounds) {
     }
 }
 
+// Additional helper functions for input handling
+
 string UIHandler::getLine(const string& prompt) {
     string input;
     while(true) {
@@ -374,12 +377,6 @@ string UIHandler::getLine(const string& prompt) {
             getline(cin, input);
             if (input.empty()) {
                 throw HandleException("Input cannot be empty. Please try again.");
-            }
-            // Check for invalid characters (e.g., numbers or special characters)
-            for (char c : input) {
-                if (!isalpha(c) && c != ' ') {
-                    throw HandleException("Invalid character in input. Only letters and spaces are allowed.");
-                }
             }
             return input;
         }
@@ -395,7 +392,8 @@ int UIHandler::getInt(const string& prompt) {
         try {
             cout << prompt;
             cin >> value;
-            cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Clear input buffer
+            // Clear the input buffer to handle any leftover characters
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
             if (cin.fail()) {
                 throw HandleException("Invalid input. Please enter an integer.");
             }
