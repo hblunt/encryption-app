@@ -201,6 +201,9 @@ void UIHandler::displayMenu3a(string& message) {
                 cout << "Using automatic grid size.\n";
                 gridSize = 0; // 0 means auto
                 continue;
+            } else if (choice == 3 && gridSize <= 0) {
+                throw HandleException("Grid size must be positive. Please enter a valid number.\nPress Enter to continue.");
+                continue;
             } else if (choice == 3) {
                 cout << "Printing the grid and the encoded message...\n";
                 handleEncryption(message, rounds, gridSize);

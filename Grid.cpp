@@ -2,15 +2,23 @@
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
-#include <algorithm>
 #include <cctype>
 #include <string>
 #include <vector>
+#include "HandleException.hpp"
 
 using namespace std;
 
 Grid::Grid(int gridSize) : size(gridSize), matrix(gridSize, vector<char>(gridSize, ' ')) {
     srand(static_cast<unsigned>(time(nullptr)));
+}
+
+void Grid::setCell(int row, int col, char value) {
+    if (row >= 0 && row < size && col >= 0 && col < size) {
+        matrix[row][col] = value;
+    } else {
+        throw HandleException("Invalid cell indices for setting value in grid.");
+    }
 }
 
 void Grid::fillWithMessage(const string& diamondMessage) {

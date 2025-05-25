@@ -36,7 +36,7 @@ string Decryptor::processDecryption(const string& encryptedMessage, bool isFinal
     for (int col = 0; col < size; ++col) {
         for (int row = 0; row < size; ++row) {
             if (idx < length) {
-                grid.matrix[row][col] = encryptedMessage[idx++];
+                grid.setCell(row, col, encryptedMessage[idx++]);
             }
         }
     }

@@ -20,10 +20,10 @@ string Encryptor::encrypt(const string& message, int rounds, int gridSize) {
     return result;
 }
 
-string Encryptor::processEncryption(const string& message_for_this_round, int gridSize_for_this_round) {
-    Grid grid(gridSize_for_this_round);
+string Encryptor::processEncryption(const string& message, int gridSize) {
+    Grid grid(gridSize);
 
-    grid.fillWithMessage(message_for_this_round); 
+    grid.fillWithMessage(message); 
 
     grid.fillRandom();
 
